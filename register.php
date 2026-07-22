@@ -7,7 +7,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     $name = $_POST['name'];
     $email = $_POST['email'];
     $pass = password_hash($_POST['password'], PASSWORD_DEFAULT); // password encrypt
-    
+
     // Check if email already exists
     $check = $conn->prepare("SELECT id FROM users WHERE email=?");
     $check->bind_param("s",$email);
@@ -15,10 +15,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     if($check->get_result()->num_rows > 0){
         $msg = "<div class='alert alert-danger'>Email already registered!</div>";
     } else {
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, 'user')");
-        $stmt->bind_param("sss",$name,$email,$pass);
-        if($stmt->execute()){
+      $role = 'user';
+      $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+      $stmt->bind_param("ssss",$name,$email,$pass,$role);
+      if($stmt->execute()){
             $msg = "<div class='alert alert-success'>Registration successful! <a href='login.php'>Login Now</a></div>";
+        } else {
+            $msg = "<div class='alert alert-danger'>Error: ".$conn->error."</div>";
         }
     }
 }
